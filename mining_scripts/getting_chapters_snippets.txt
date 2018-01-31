@@ -1,0 +1,6 @@
+Feed this to chrome:
+
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --new-window martinguitar.com/guitars/new-models www.martinguitar.com/guitars/limited-editions www.martinguitar.com/guitars/special-editions www.martinguitar.com/guitars/authentic-vintage www.martinguitar.com/guitars/custom-signature-editions www.martinguitar.com/guitars/retro-series www.martinguitar.com/guitars/standard-series-reimagined-2018 www.martinguitar.com/guitars/standard-series www.martinguitar.com/guitars/performing-artist-series www.martinguitar.com/guitars/17-series www.martinguitar.com/guitars/16-series www.martinguitar.com/guitars/15-series www.martinguitar.com/guitars/road-series www.martinguitar.com/guitars/x-series www.martinguitar.com/guitars/little-martin www.martinguitar.com/guitars/junior www.martinguitar.com/guitars/ukulele www.martinguitar.com/guitars/backpacker www.martinguitar.com/guitars/fsc-certified www.martinguitar.com/guitars/discontinued-guitars
+
+
+mkdir new-models limited-editions special-editions authentic-vintage custom-signature-editions retro-series standard-series-reimagined-2018 standard-series performing-artist-series 17-series 16-series 15-series road-series x-series little-martin junior ukulele backpacker fsc-certified discontinued-guitars

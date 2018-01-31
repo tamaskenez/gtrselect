@@ -1,0 +1,100 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>The Martin Guitar Selector</title>
+  <meta name="description" content="The Martin Guitar Selector">
+  <meta name="author" content="Tamas Kenez">
+
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="res/guitardb.js"></script>
+</head>
+
+<body>
+  <div>
+    <span>Price Range: </span>
+    <span>1000</span>
+    <span>2000</span>
+    <span>3000</span>
+  </div>
+  <div>
+    <span>Series: </span>
+    <span>Backpacker</span>
+    <span>X</span>
+    <span>15</span>
+    <span>16</span>
+    <span>17</span>
+    <span>Standard</span>
+  </div>
+  <div>
+    <span>Body: </span>
+    <span>0</span>
+    <span>00</span>
+    <span>000</span>
+    <span>OM</span>
+    <span>D</span>
+  </div>
+  <div id='id1'>Table here</div>
+  <script>
+    const table = document.createElement('TABLE')
+    for (i = 0; i < guitarDb.length; i++) {
+      const tr = document.createElement('TR')
+      const gi = guitarDb[i]
+      {
+        const td = document.createElement('TD')
+        let img = document.createElement('IMG')
+        img.src = "res/imgs/" + gi[3]
+        img.height = 50
+        td.appendChild(img)
+        tr.appendChild(td)
+      }
+      {
+        let a = document.createElement('A')
+        a.href = gi[2]
+        a.innerText = gi[0]
+        const td = document.createElement('TD')
+        td.appendChild(a)
+        tr.appendChild(td)
+      }
+      {
+        const td = document.createElement('TD')
+        td.appendChild(document.createTextNode(gi[4]))
+        tr.appendChild(td)
+      }
+      {
+        const td = document.createElement('TD')
+        td.appendChild(document.createTextNode(gi[6]))
+        tr.appendChild(td)
+      }
+      {
+        const td = document.createElement('TD')
+        td.appendChild(document.createTextNode(gi[7]))
+        tr.appendChild(td)
+      }
+      {
+        const td = document.createElement('TD')
+        td.appendChild(document.createTextNode(gi[10]))
+        tr.appendChild(td)
+      }
+      /*
+      for (j = 0; j < gi.length; j++) {
+        const td = document.createElement('TD')
+        if (j == 3) {
+          let img = document.createElement('IMG')
+          img.src = "res/imgs/" + gi[3]
+          img.height = 200
+          td.appendChild(img)
+        } else {
+          td.appendChild(document.createTextNode(gi[j]))
+        }
+        tr.appendChild(td)
+      }
+      */
+      table.appendChild(tr)
+    }
+    document.getElementById('id1').appendChild(table)
+  </script>
+</body>
+</html>
