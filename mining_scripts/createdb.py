@@ -14,7 +14,7 @@ def normalizeToFilename(filename):
     cleanedFilename = unicodedata.normalize('NFKD', filename.decode('utf-8')).encode('ASCII', 'ignore')
     return ''.join(c for c in cleanedFilename if c in validFilenameChars)
 
-FIELDS = ["Construction",
+SRC_FIELDS = [
     "Body Size",
     "Top Material",
     "Back Material",
@@ -30,21 +30,108 @@ FIELDS = ["Construction",
     "Left Handed Availability",
 ]
 
-SELECTOR_FIELDS = [
+DB_FIELDS = [
+    "Name",
+    "Series",
+    "URL",
+    "Image",
+    "Price",
     "Body Size",
     "Top Material",
-    "Back Material",
-    "Side Material",
+    "Back/Side Material",
     "Neck Material",
+    "Neck Shape",
+    "Neck Taper",
     "Fingerboard Material",
     "Scale Length",
     "Fingerboard Width at Nut",
+    "Recommended Strings",
     "Electronics",
+    "Left Handed Availability",
+    "Price Range",
+    "Electronics Availability",
+]
+
+SELECTOR_FIELDS = [
+    "Series",
+    "Body Size",
+    "Price Range",
+    "Top Material",
+    "Back/Side Material",
+    "Fingerboard Material",
+    "Scale Length",
+    "Fingerboard Width at Nut",
+    "Electronics Availability",
     "Left Handed Availability",
 ]
 
+TABLE_FIELDS = [
+    "Body Size",
+    "Top Material",
+    "Back/Side Material",
+    "Neck Material",
+    "Neck Shape",
+    "Neck Taper",
+    "Fingerboard Material",
+    "Scale Length",
+    "Fingerboard Width at Nut",
+    "Recommended Strings",
+    "Left Handed Availability",
+    "Electronics",
+]
+
+SERIES_RENAME = {
+    'new-models': 'New',
+    'authentic-vintage': 'Authentic Vintage',
+    'discontinued-guitars': 'Discontinued',
+    'performing-artist-series': 'Performing Artist',
+    'ukulele': 'Ukulele',
+    'retro-series': 'Retro',
+    'little-martin': 'Little',
+    'fsc-certified': 'FSC',
+    'x-series': 'X-Series',
+    'road-series': 'Road',
+    '16-series': '16-Series',
+    'custom-signature-editions': 'Custom Signature',
+    '15-series': '15-Series',
+    'special-editions': 'Special Editions',
+    'backpacker': 'Backpacker',
+    '17-series': '17-Series',
+    'standard-series': 'Standard',
+    'limited-editions': 'Limited',
+    'junior': 'Junior',
+    'standard-series-reimagined-2018': 'Standard-2018'
+}
+
+SERIES_SORTING = [
+    'New',
+    'Limited',
+    'Special Editions',
+    'Authentic Vintage',
+
+    'Custom Signature',
+    'Retro',
+    'Standard-2018'
+    'Standard',
+
+    'Performing Artist',
+    '17-Series',
+    '16-Series',
+    '15-Series',
+
+    'Road',
+    'X-Series',
+    'Little',
+    'Junior',
+
+    'Ukulele',
+    'Backpacker',
+    'FSC',
+    'Discontinued',
+]
+
 fieldstat = dict()
-for field in FIELDS:
+for field in (SELECTOR_FIELDS + TABLE_FIELDS):
     fieldstat[field] = set()
 
 dblines = []
@@ -55,6 +142,8 @@ SAVED_GUITARS_DIR = os.path.join("saved", "guitars")
 
 def read_series(subdirname):
     series = re.match(".*/(.*)", subdirname).group(1)
+    series = SERIES_RENAME[series]
+    assert series is not None
     print("Reading directory {}.".format(subdirname))
     # There should be a directory and a file in this dir.
     files = os.listdir(subdirname)
@@ -98,7 +187,9 @@ def read_series(subdirname):
             with open(saved_guitar_filename, 'w') as f:
                 f.write(html)
         dbline = '"{}", "{}", "{}", "{}", "{}", '.format(name, series, martinurl, imgfilename, price)
-        for field in FIELDS:
+        back_material = None
+        electronics_value = None
+        for field in SRC_FIELDS:
             if field == "Recommended Strings":
                 regex = '<strong>{}:</strong>.*?href="#">(.*?)</a>'.format(field)
             else:
@@ -110,8 +201,53 @@ def read_series(subdirname):
                 value = m.group(1).strip()
             # Normalize value.
             value = value.replace('"', "''").replace("<sup>", "").replace("</sup>", "")
+
+            if field == "Back Material":
+                back_material = value
+                continue
+
+            if field == "Side Material":
+                assert back_material is not None
+                if back_material != value:
+                    value = back_material + " / " + value
+                field = "Back/Side Material"
+            elif field == "Electronics":
+                if value in ['Not Available', 'N/A']:
+                    value = 'None'
+                electronics_value = value
+
             dbline = dbline + '"' + value + '", '
+            if field in fieldstat:
+                fieldstat[field].add(value)
+
+        field = "Price Range"
+        price_value = int(''.join([c for c in price if c.isdigit()]))
+        if price_value < 1000:
+            price_range = "below $1000"
+        elif price_value >= 5000:
+            price_range = "above $5000"
+        else:
+            price_range = "$" + str((price_value // 1000) * 1000 + 999)
+
+        dbline = dbline + '"' + price_range + '", '
+        if field in fieldstat:
+            fieldstat[field].add(price_range)
+
+        field = "Electronics Availability"
+        assert electronics_value is not None
+        if electronics_value in ["None", "Optional"]:
+            value = electronics_value
+        else:
+            value = "Yes"
+
+        dbline = dbline + '"' + value + '", '
+        if field in fieldstat:
             fieldstat[field].add(value)
+
+        field = "Series"
+        if field in fieldstat:
+            fieldstat[field].add(series)
+
         dblines.append(dbline)
 
 def main(argv):
@@ -137,6 +273,18 @@ def main(argv):
         f.write("const guitarDb = [\n")
         for dbline in dblines:
             f.write("[" + dbline + "],\n")
+        f.write("];\n")
+        f.write("const guitarDbFields = [\n")
+        for field in DB_FIELDS:
+            f.write('"' + field + '", ')
+        f.write("];\n")
+        f.write("const tableFields = [\n")
+        for field in TABLE_FIELDS:
+            f.write('"' + field + '", ')
+        f.write("];\n")
+        f.write("const tableFieldToDbIndices = [\n")
+        for field in TABLE_FIELDS:
+            f.write(str(DB_FIELDS.index(field)) + ', ')
         f.write("];\n")
 if __name__ == "__main__":
     main(sys.argv[1:])

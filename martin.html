@@ -10,6 +10,15 @@
 
   <link rel="stylesheet" href="css/styles.css">
   <script src="res/guitardb.js"></script>
+  <style>
+    .rotate90 {
+      -webkit-transform: rotate(90deg);
+      -moz-transform: rotate(90deg);
+      -o-transform: rotate(90deg);
+      -ms-transform: rotate(90deg);
+      transform: rotate(90deg);
+    }
+  </style>
 </head>
 
 <body>
@@ -44,38 +53,49 @@
       const gi = guitarDb[i]
       {
         const td = document.createElement('TD')
-        let img = document.createElement('IMG')
-        img.src = "res/imgs/" + gi[3]
-        img.height = 50
-        td.appendChild(img)
+        const innertable = document.createElement('TABLE')
+        const tr0 = document.createElement('TR')
+        const tr1 = document.createElement('TR')
+        const tr2 = document.createElement('TR')
+
+        {
+          let img = document.createElement('IMG')
+          img.src = "res/imgs/" + gi[3]
+          img.height = 200
+          let a = document.createElement('A')
+          a.href = gi[2]
+          a.appendChild(img)
+          img.className = "rotate90"
+          a.style = "height:100px"
+          const tdq = document.createElement('TD')
+          tdq.appendChild(img)
+          tr0.appendChild(tdq)
+          tdq.style = "width:200px; height:100px"
+          tr0.style = "width:200px; height:100px"
+        }
+
+        {
+          let a = document.createElement('A')
+          a.href = gi[2]
+          a.innerText = gi[0]
+          tr1.appendChild(a)
+        }
+
+        tr2.appendChild(document.createTextNode(gi[4]))
+
+        innertable.appendChild(tr0)
+//        innertable.appendChild(tr1)
+  //      innertable.appendChild(tr2)
+        td.appendChild(innertable)
         tr.appendChild(td)
+        innertable.style = "width:200px; height:100px"
+        td.style = "width:200px; height:100px"
       }
-      {
-        let a = document.createElement('A')
-        a.href = gi[2]
-        a.innerText = gi[0]
+      tr.style = "height:100px"
+      for (j = 0; j < tableFieldToDbIndices.length; j++) {
         const td = document.createElement('TD')
-        td.appendChild(a)
-        tr.appendChild(td)
-      }
-      {
-        const td = document.createElement('TD')
-        td.appendChild(document.createTextNode(gi[4]))
-        tr.appendChild(td)
-      }
-      {
-        const td = document.createElement('TD')
-        td.appendChild(document.createTextNode(gi[6]))
-        tr.appendChild(td)
-      }
-      {
-        const td = document.createElement('TD')
-        td.appendChild(document.createTextNode(gi[7]))
-        tr.appendChild(td)
-      }
-      {
-        const td = document.createElement('TD')
-        td.appendChild(document.createTextNode(gi[10]))
+        const ix = tableFieldToDbIndices[j]
+        td.appendChild(document.createTextNode(gi[ix]))
         tr.appendChild(td)
       }
       /*
