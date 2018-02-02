@@ -105,33 +105,6 @@ SERIES_RENAME = {
     'standard-series-reimagined-2018': 'Standard-2018'
 }
 
-SERIES_SORTING = [
-    'New',
-    'Limited',
-    'Special Editions',
-    'Authentic Vintage',
-
-    'Custom Signature',
-    'Retro',
-    'Standard-2018'
-    'Standard',
-
-    'Performing Artist',
-    '17-Series',
-    '16-Series',
-    '15-Series',
-
-    'Road',
-    'X-Series',
-    'Little',
-    'Junior',
-
-    'Ukulele',
-    'Backpacker',
-    'FSC',
-    'Discontinued',
-]
-
 fieldstat = dict()
 for field in (SELECTOR_FIELDS + TABLE_FIELDS):
     fieldstat[field] = set()
