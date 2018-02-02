@@ -18,98 +18,152 @@
       -ms-transform: rotate(90deg);
       transform: rotate(90deg);
     }
+    .choiceName {
+      cursor: default;
+      display: block;
+      height: 20px;
+      white-space: nowrap;
+      -webkit-border-radius: 3px;
+      border-radius: 3px;
+    }
+    .choice {
+      background-color: #f5f5f5;
+      border: 1px solid #d9d9d9;
+      cursor: default;
+      display: block;
+      height: 20px;
+      white-space: nowrap;
+      -webkit-border-radius: 3px;
+      border-radius: 3px;
+      color: #808080;
+    }
+    .choice:hover {
+      border: 1px solid #898989;
+    }
+    .activeChoice {
+      background-color: #f5f585;
+      border: 1px solid #d9d989;
+      cursor: default;
+      display: block;
+      height: 20px;
+      white-space: nowrap;
+      -webkit-border-radius: 3px;
+      border-radius: 3px;
+    }
+    .activeChoice:hover {
+      border: 1px solid #898989;
+    }
   </style>
 </head>
 
 <body>
   <div>
-    <span>Price Range: </span>
-    <span>1000</span>
-    <span>2000</span>
-    <span>3000</span>
+    <table>
+      <tr id='tr_productGroupChoice'>
+        <td><span class="choiceName">Product Group: </span>
+    </table>
   </div>
-  <div>
-    <span>Series: </span>
-    <span>Backpacker</span>
-    <span>X</span>
-    <span>15</span>
-    <span>16</span>
-    <span>17</span>
-    <span>Standard</span>
-  </div>
-  <div>
-    <span>Body: </span>
-    <span>0</span>
-    <span>00</span>
-    <span>000</span>
-    <span>OM</span>
-    <span>D</span>
-  </div>
-  <div id='id1'>Table here</div>
+  <div id='div_data_display'>Table here</div>
   <script>
-    const table = document.createElement('TABLE')
-    for (i = 0; i < guitarDb.length; i++) {
-      const tr = document.createElement('TR')
-      const gi = guitarDb[i]
-      {
-        const td = document.createElement('TD')
-        const innertable = document.createElement('TABLE')
-        const tr0 = document.createElement('TR')
-        const tr1 = document.createElement('TR')
-        const tr2 = document.createElement('TR')
-
-        {
-          let img = document.createElement('IMG')
-          img.src = "res/imgs_table_horiz/" + gi[3]
-          let a = document.createElement('A')
-          a.href = gi[2]
-          a.appendChild(img)
-          const tdq = document.createElement('TD')
-          tdq.appendChild(a)
-          tr0.appendChild(tdq)
-          tr0.style = "text-align:center"
-        }
-
-        {
-          let a = document.createElement('A')
-          a.href = gi[2]
-          a.innerText = gi[0]
-          tr1.style = "text-align:center"
-          tr1.appendChild(a)
-        }
-
-        tr2.appendChild(document.createTextNode(gi[4]))
-        tr2.style = "text-align:center"
-
-        innertable.appendChild(tr0)
-        innertable.appendChild(tr1)
-        innertable.appendChild(tr2)
-        td.appendChild(innertable)
-        tr.appendChild(td)
-      }
-      for (j = 0; j < tableFieldToDbIndices.length; j++) {
-        const td = document.createElement('TD')
-        const ix = tableFieldToDbIndices[j]
-        td.appendChild(document.createTextNode(gi[ix]))
-        tr.appendChild(td)
-      }
-      /*
-      for (j = 0; j < gi.length; j++) {
-        const td = document.createElement('TD')
-        if (j == 3) {
-          let img = document.createElement('IMG')
-          img.src = "res/imgs/" + gi[3]
-          img.height = 200
-          td.appendChild(img)
-        } else {
-          td.appendChild(document.createTextNode(gi[j]))
-        }
-        tr.appendChild(td)
-      }
-      */
-      table.appendChild(tr)
+    function removeChildNodesById(id) {
+      const node = document.getElementById(id)
+      const cNode = node.cloneNode(false);
+      node.parentNode.replaceChild(cNode, node);
+      return cNode
     }
-    document.getElementById('id1').appendChild(table)
+    const productGroupChoices = ['6-String', '12-String', 'Backpacker', 'Ukulele']
+    var selectors = {}
+    selectors["Product Group"] = 0
+
+    const product_group_field_ix = guitarDbFields.indexOf("Product Group")
+
+    function renderTable() {
+      const table = document.createElement('TABLE')
+      const selected_product_group = productGroupChoices[selectors["Product Group"]]
+      for (i = 0; i < guitarDb.length; i++) {
+        const tr = document.createElement('TR')
+        const gi = guitarDb[i]
+        const product_group = gi[product_group_field_ix]
+        if (product_group != selected_product_group) {
+          continue
+        }
+
+        {
+          const td = document.createElement('TD')
+          const innertable = document.createElement('TABLE')
+          const tr0 = document.createElement('TR')
+          const tr1 = document.createElement('TR')
+          const tr2 = document.createElement('TR')
+
+          {
+            let img = document.createElement('IMG')
+            img.src = "res/imgs_table_horiz/" + gi[3]
+            let a = document.createElement('A')
+            a.href = gi[2]
+            a.appendChild(img)
+            const tdq = document.createElement('TD')
+            tdq.appendChild(a)
+            tr0.appendChild(tdq)
+            tr0.style = "text-align:center"
+          }
+
+          {
+            let a = document.createElement('A')
+            a.href = gi[2]
+            a.innerText = gi[0]
+            tr1.style = "text-align:center"
+            tr1.appendChild(a)
+          }
+
+          tr2.appendChild(document.createTextNode(gi[4]))
+          tr2.style = "text-align:center"
+
+          innertable.appendChild(tr0)
+          innertable.appendChild(tr1)
+          innertable.appendChild(tr2)
+          td.appendChild(innertable)
+          tr.appendChild(td)
+        }
+        for (j = 0; j < tableFieldToDbIndices.length; j++) {
+          const td = document.createElement('TD')
+          const ix = tableFieldToDbIndices[j]
+          td.appendChild(document.createTextNode(gi[ix]))
+          tr.appendChild(td)
+        }
+        table.appendChild(tr)
+      }
+
+      let node = removeChildNodesById('div_data_display')
+      node.appendChild(table)
+    }
+
+    function updateSelectors() {
+      const node = document.getElementById('tr_productGroupChoice')
+      while (node.childNodes.length > 2) {
+        node.removeChild(node.lastChild)
+      }
+      const c = selectors["Product Group"]
+      for (let i = 0; i < productGroupChoices.length; ++i) {
+        const s = document.createElement('SPAN')
+        s.appendChild(document.createTextNode(productGroupChoices[i]))
+        s.className = i == c ? "activeChoice" : "choice"
+        s.onclick = function() { choiceClicked("Product Group", i) }
+        const td = document.createElement('TD')
+        td.appendChild(s)
+        node.appendChild(td)
+      }
+    }
+    function choiceClicked(choiceName, idx) {
+      if (selectors[choiceName] != idx) {
+        selectors[choiceName] = idx
+        renderTable()
+        updateSelectors()
+      }
+    }
+  </script>
+  <script>
+    renderTable()
+    updateSelectors()
   </script>
 </body>
 </html>
