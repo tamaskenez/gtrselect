@@ -60,38 +60,33 @@
 
         {
           let img = document.createElement('IMG')
-          img.src = "res/imgs/" + gi[3]
-          img.height = 200
+          img.src = "res/imgs_table_horiz/" + gi[3]
           let a = document.createElement('A')
           a.href = gi[2]
           a.appendChild(img)
-          img.className = "rotate90"
-          a.style = "height:100px"
           const tdq = document.createElement('TD')
-          tdq.appendChild(img)
+          tdq.appendChild(a)
           tr0.appendChild(tdq)
-          tdq.style = "width:200px; height:100px"
-          tr0.style = "width:200px; height:100px"
+          tr0.style = "text-align:center"
         }
 
         {
           let a = document.createElement('A')
           a.href = gi[2]
           a.innerText = gi[0]
+          tr1.style = "text-align:center"
           tr1.appendChild(a)
         }
 
         tr2.appendChild(document.createTextNode(gi[4]))
+        tr2.style = "text-align:center"
 
         innertable.appendChild(tr0)
-//        innertable.appendChild(tr1)
-  //      innertable.appendChild(tr2)
+        innertable.appendChild(tr1)
+        innertable.appendChild(tr2)
         td.appendChild(innertable)
         tr.appendChild(td)
-        innertable.style = "width:200px; height:100px"
-        td.style = "width:200px; height:100px"
       }
-      tr.style = "height:100px"
       for (j = 0; j < tableFieldToDbIndices.length; j++) {
         const td = document.createElement('TD')
         const ix = tableFieldToDbIndices[j]

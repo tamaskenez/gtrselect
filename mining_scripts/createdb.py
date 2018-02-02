@@ -50,9 +50,11 @@ DB_FIELDS = [
     "Left Handed Availability",
     "Price Range",
     "Electronics Availability",
+    "Product Group"
 ]
 
 SELECTOR_FIELDS = [
+    "Product Group",
     "Series",
     "Body Size",
     "Price Range",
@@ -189,6 +191,7 @@ def read_series(subdirname):
         dbline = '"{}", "{}", "{}", "{}", "{}", '.format(name, series, martinurl, imgfilename, price)
         back_material = None
         electronics_value = None
+        twelve_strings = None
         for field in SRC_FIELDS:
             if field == "Recommended Strings":
                 regex = '<strong>{}:</strong>.*?href="#">(.*?)</a>'.format(field)
@@ -211,10 +214,14 @@ def read_series(subdirname):
                 if back_material != value:
                     value = back_material + " / " + value
                 field = "Back/Side Material"
+                if value == "Honduras Rosewood / Madagascar Rosewood":
+                    value = "Honduras/Madagascar Rosewood"
             elif field == "Electronics":
                 if value in ['Not Available', 'N/A']:
                     value = 'None'
                 electronics_value = value
+            elif field == "Recommended Strings":
+                twelve_strings = "12-String" in value
 
             dbline = dbline + '"' + value + '", '
             if field in fieldstat:
@@ -247,6 +254,22 @@ def read_series(subdirname):
         field = "Series"
         if field in fieldstat:
             fieldstat[field].add(series)
+
+        if series == "Backpacker":
+            pg = "Backpacker"
+        elif series == "Ukulele":
+            pg = "Ukulele"
+        else:
+            assert twelve_strings is not None
+            if twelve_strings:
+                pg = "12-String"
+            else:
+                pg = "6-String"
+
+        dbline = dbline + '"' + pg + '", '
+        field = "Product Group"
+        if field in fieldstat:
+            fieldstat[field].add(pg)
 
         dblines.append(dbline)
 
