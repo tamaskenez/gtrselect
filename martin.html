@@ -99,9 +99,18 @@
     resetSelections()
     let stat_by_attr = {}
 
-    const product_group_field_ix = guitarDbFields.indexOf("Product Group")
-    const series_field_ix = guitarDbFields.indexOf("Series")
-    const simplified_body_size_field_ix = guitarDbFields.indexOf("Simplified Body Size")
+    const db_product_group_ix = guitarDbFields.indexOf("Product Group")
+    const db_series_ix = guitarDbFields.indexOf("Series")
+    const db_simplified_body_size_ix = guitarDbFields.indexOf("Simplified Body Size")
+    const db_body_size_ix = guitarDbFields.indexOf("Body Size")
+    const db_top_material_ix = guitarDbFields.indexOf("Top Material")
+    const db_back_side_material_ix = guitarDbFields.indexOf("Back/Side Material")
+    const db_neck_material_ix = guitarDbFields.indexOf("Neck Material")
+    const db_neck_shape_ix = guitarDbFields.indexOf("Neck Shape")
+    const db_neck_taper_ix = guitarDbFields.indexOf("Neck Taper")
+    const db_fingerboard_material_ix = guitarDbFields.indexOf("Fingerboard Material")
+    const db_scale_length_ix = guitarDbFields.indexOf("Scale Length")
+    const db_fingerboard_with_at_nut_ix = guitarDbFields.indexOf("Fingerboard Width at Nut")
 
     function incrementStat(choice_key, choice_val) {
       if (!(choice_key in stat_by_attr))
@@ -129,9 +138,9 @@
       for (i = 0; i < guitarDb.length; ++i) {
         const tr = document.createElement('TR')
         const gi = guitarDb[i]
-        const product_group = gi[product_group_field_ix]
-        const series = gi[series_field_ix]
-        const simplified_body_size = gi[simplified_body_size_field_ix]
+        const product_group = gi[db_product_group_ix]
+        const series = gi[db_series_ix]
+        const simplified_body_size = gi[db_simplified_body_size_ix]
 
         if (product_group != selected_product_group) {
           continue
@@ -187,12 +196,40 @@
           td.appendChild(innertable)
           tr.appendChild(td)
         }
-        for (j = 0; j < tableFieldToDbIndices.length; j++) {
+        const add_cell = function(cell_text) {
           const td = document.createElement('TD')
-          const ix = tableFieldToDbIndices[j]
-          td.appendChild(document.createTextNode(gi[ix]))
           tr.appendChild(td)
+          return td
         }
+        add_cell().appendChild(document.createTextNode(gi[db_body_size_ix]))
+        {
+          const td = add_cell()
+          td.appendChild(document.createTextNode(gi[db_top_material_ix] + " top,"))
+          td.appendChild(document.createElement("BR"))
+          td.appendChild(document.createTextNode(gi[db_back_side_material_ix] + " back/side"))
+          td.appendChild(document.createElement("BR"))
+          td.appendChild(document.createTextNode(gi[db_neck_material_ix] + " neck"))
+        }
+        {
+          const td = add_cell()
+          td.appendChild(document.createTextNode(gi[db_fingerboard_material_ix] + " fingerboard,"))
+          td.appendChild(document.createElement("BR"))
+          td.appendChild(document.createTextNode(gi[db_neck_shape_ix] + " shape with"))
+          td.appendChild(document.createElement("BR"))
+          td.appendChild(document.createTextNode(gi[db_neck_taper_ix]))
+        }
+        {
+          const td = add_cell()
+          td.appendChild(document.createTextNode(gi[db_scale_length_ix] + " scale,"))
+          td.appendChild(document.createElement("BR"))
+          td.appendChild(document.createTextNode(gi[db_fingerboard_with_at_nut_ix] + " at nut"))
+        }
+        /*
+        for (j = 0; j < tableFieldToDbIndices.length; j++) {
+          const ix = tableFieldToDbIndices[j]
+          add_cell(gi[ix])
+        }
+        */
         table.appendChild(tr)
       }
 
