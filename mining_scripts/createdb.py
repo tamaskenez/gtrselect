@@ -50,7 +50,8 @@ DB_FIELDS = [
     "Left Handed Availability",
     "Price Range",
     "Electronics Availability",
-    "Product Group"
+    "Product Group",
+    "Simplified Body Size"
 ]
 
 SELECTOR_FIELDS = [
@@ -165,6 +166,7 @@ def read_series(subdirname):
         back_material = None
         electronics_value = None
         twelve_strings = None
+        simplified_body_size = None
         for field in SRC_FIELDS:
             if field == "Recommended Strings":
                 regex = '<strong>{}:</strong>.*?href="#">(.*?)</a>'.format(field)
@@ -195,6 +197,33 @@ def read_series(subdirname):
                 electronics_value = value
             elif field == "Recommended Strings":
                 twelve_strings = "12-String" in value
+            elif field == "Body Size":
+                if value.startswith("0-"):
+                    simplified_body_size = "0"
+                elif value.startswith("00-"):
+                    simplified_body_size = "00"
+                elif value.startswith("000-"):
+                    simplified_body_size = "000"
+                elif value == "Backpacker":
+                    simplified_body_size = "Backpacker"
+                elif "Ukulele" in value:
+                    simplified_body_size = "Ukulele"
+                elif value.startswith("D Junior"):
+                    simplified_body_size = "D Jr"
+                elif value.startswith("D-"):
+                    simplified_body_size = "D"
+                elif value.startswith("Grand J-"):
+                    simplified_body_size = "Grand J"
+                elif value.startswith("Grand Performance"):
+                    simplified_body_size = "Grand Performance"
+                elif value.startswith("J-"):
+                    simplified_body_size = "J"
+                elif value.startswith("M-"):
+                    simplified_body_size = "M (0000)"
+                elif value.startswith("Modified"):
+                    simplified_body_size = "M (0)"
+                else:
+                    assert False
 
             dbline = dbline + '"' + value + '", '
             if field in fieldstat:
@@ -228,9 +257,11 @@ def read_series(subdirname):
         if field in fieldstat:
             fieldstat[field].add(series)
 
-        if series == "Backpacker":
+        assert simplified_body_size is not None
+
+        if "Backpacker" in simplified_body_size:
             pg = "Backpacker"
-        elif series == "Ukulele":
+        elif "Ukulele" in simplified_body_size:
             pg = "Ukulele"
         else:
             assert twelve_strings is not None
@@ -243,6 +274,11 @@ def read_series(subdirname):
         field = "Product Group"
         if field in fieldstat:
             fieldstat[field].add(pg)
+
+        dbline = dbline + '"' + simplified_body_size + '", '
+        field = "Simplified Body Size"
+        if field in fieldstat:
+            fieldstat[field].add(simplified_body_size)
 
         dblines.append(dbline)
 

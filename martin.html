@@ -69,10 +69,17 @@
         <td><span class="choice_key">Series: </span>
     </table>
   </div>
+  <div>
+    <table>
+      <tr id='tr_simplifiedBodySizeChoice'>
+        <td><span class="choice_key">Body Size: </span>
+    </table>
+  </div>
   <div id='div_data_display'>Table here</div>
   <script>
     const PRODUCT_GROUP_CHOICE_SET = ['6-String', '12-String', 'Backpacker', 'Ukulele']
     const SERIES_CHOICE_SET = ['New', 'Limited', 'Special', 'Authentic', 'Signature', 'Retro', 'Standard-2018', 'Standard', 'Performing', '17', '16', '15', 'Road', 'X', 'Little', 'Junior', 'Ukulele', 'Backpacker', 'FSC', 'Discontinued']
+    const SIMPLIFIED_BODY_SIZE_CHOICE_SET = [ 'Grand J', 'J', 'D', 'M (0000)', 'Grand Performance', '000', '00', '0', 'D Jr', 'M (0)', 'Backpacker', 'Ukulele']
 
     function arrayToSet(a) {
       let r = {}
@@ -84,6 +91,7 @@
     function resetSelections() {
       selected_by_attr["Series"] = arrayToSet(SERIES_CHOICE_SET)
       delete selected_by_attr["Series"].Discontinued
+      selected_by_attr["Simplified Body Size"] = arrayToSet(SIMPLIFIED_BODY_SIZE_CHOICE_SET)
     }
 
     let selected_by_attr = {}
@@ -93,6 +101,7 @@
 
     const product_group_field_ix = guitarDbFields.indexOf("Product Group")
     const series_field_ix = guitarDbFields.indexOf("Series")
+    const simplified_body_size_field_ix = guitarDbFields.indexOf("Simplified Body Size")
 
     function incrementStat(choice_key, choice_val) {
       if (!(choice_key in stat_by_attr))
@@ -102,12 +111,14 @@
         vals[choice_val] = 0
       ++vals[choice_val]
     }
+
     function removeChildNodesById(id) {
       const node = document.getElementById(id)
       const cNode = node.cloneNode(false);
       node.parentNode.replaceChild(cNode, node);
       return cNode
     }
+
     function renderTable() {
       const table = document.createElement('TABLE')
       const selected_product_group = PRODUCT_GROUP_CHOICE_SET[selected_by_attr["Product Group"]]
@@ -120,15 +131,23 @@
         const gi = guitarDb[i]
         const product_group = gi[product_group_field_ix]
         const series = gi[series_field_ix]
+        const simplified_body_size = gi[simplified_body_size_field_ix]
+
         if (product_group != selected_product_group) {
           continue
         }
 
         ++stat_by_attr.count
         incrementStat("Series", series)
+        incrementStat("Simplified Body Size", simplified_body_size)
 
         const series_sel = selected_by_attr["Series"]
         if (!(series in series_sel)) {
+          continue
+        }
+
+        const simplified_body_size_sel = selected_by_attr["Simplified Body Size"]
+        if (!(simplified_body_size in simplified_body_size_sel)) {
           continue
         }
 
@@ -188,6 +207,7 @@
       }
       return node
     }
+
     function updateSelectors() {
       {
         const node = resetChoiceNode('tr_productGroupChoice')
@@ -202,19 +222,19 @@
           node.appendChild(td)
         }
       }
-      {
-        const node = resetChoiceNode('tr_seriesChoice')
-        const selected_choice_vals = selected_by_attr["Series"]
+      function addChoiceList(id, choice_key, choice_set) {
+        const node = resetChoiceNode(id)
+        const selected_choice_vals = selected_by_attr[choice_key]
         let choice_count = 0
-        for (let i = 0; i < SERIES_CHOICE_SET.length; ++i) {
-          const choice_val = SERIES_CHOICE_SET[i]
-          count = stat_by_attr["Series"][choice_val]
+        for (let i = 0; i < choice_set.length; ++i) {
+          const choice_val = choice_set[i]
+          count = stat_by_attr[choice_key][choice_val]
           if (count != undefined || count > 0) {
             const s = document.createElement('SPAN')
             s.appendChild(document.createTextNode(choice_val))
             s.className = choice_val in selected_choice_vals
               ? "activeChoice" : "choice"
-            s.onclick = function() { choiceClicked("Series", choice_val) }
+            s.onclick = function() { choiceClicked(choice_key, choice_val) }
             const td = document.createElement('TD')
             td.appendChild(s)
             node.appendChild(td)
@@ -223,6 +243,9 @@
         }
         node.style.visibility = choice_count <= 1 ? "hidden" : "visible"
       }
+
+      addChoiceList('tr_seriesChoice', "Series", SERIES_CHOICE_SET)
+      addChoiceList('tr_simplifiedBodySizeChoice', "Simplified Body Size", SIMPLIFIED_BODY_SIZE_CHOICE_SET)
     }
 
     // x is either an index (for "Product Group") or
@@ -236,7 +259,7 @@
           updateSelectors()
         }
       } else {
-        selected_choice_vals = selected_by_attr["Series"]
+        selected_choice_vals = selected_by_attr[choice_key]
         if (x in selected_choice_vals) {
           // Unselect.
           delete selected_choice_vals[x]
