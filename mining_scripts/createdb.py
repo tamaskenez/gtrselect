@@ -32,7 +32,6 @@ SRC_FIELDS = [
 
 DB_FIELDS = [
     "Name",
-    "Series",
     "URL",
     "Image",
     "Price",
@@ -51,7 +50,8 @@ DB_FIELDS = [
     "Price Range",
     "Electronics Availability",
     "Product Group",
-    "Simplified Body Size"
+    "Simplified Body Size",
+    "Series List"
 ]
 
 SELECTOR_FIELDS = [
@@ -110,11 +110,13 @@ fieldstat = dict()
 for field in (SELECTOR_FIELDS + TABLE_FIELDS):
     fieldstat[field] = set()
 
-dblines = []
-
 RESFOLDER = "../res"
 IMAGES_FOLDER = os.path.join(RESFOLDER, 'imgs')
 SAVED_GUITARS_DIR = os.path.join("saved", "guitars")
+
+name_to_url = {}
+name_to_series_list = {}
+name_to_dbline = {}
 
 def read_series(subdirname):
     series = re.match(".*/(.*)", subdirname).group(1)
@@ -162,7 +164,15 @@ def read_series(subdirname):
             html = response.read()
             with open(saved_guitar_filename, 'w') as f:
                 f.write(html)
-        dbline = '"{}", "{}", "{}", "{}", "{}", '.format(name, series, martinurl, imgfilename, price)
+        dbline = '"{}", "{}", "{}", "{}", '.format(name, martinurl, imgfilename, price)
+
+        if name in name_to_url:
+            assert martinurl == name_to_url[name]
+            name_to_series_list[name].append(series)
+        else:
+            name_to_url[name] = martinurl
+            name_to_series_list[name] = [series]
+
         back_material = None
         electronics_value = None
         twelve_strings = None
@@ -280,7 +290,10 @@ def read_series(subdirname):
         if field in fieldstat:
             fieldstat[field].add(simplified_body_size)
 
-        dblines.append(dbline)
+        if name in name_to_dbline:
+            assert name_to_dbline[name] == dbline
+        else:
+            name_to_dbline[name] = dbline
 
 def main(argv):
     if os.path.exists(RESFOLDER):
@@ -303,8 +316,11 @@ def main(argv):
         print("{}: {}".format(k, fieldstat[k]))
     with open(os.path.join(RESFOLDER, "guitardb.js"), 'w') as f:
         f.write("const guitarDb = [\n")
-        for dbline in dblines:
-            f.write("[" + dbline + "],\n")
+        for name in name_to_dbline:
+            dbline = name_to_dbline[name]
+            series = name_to_series_list[name]
+            assert series is not None
+            f.write('[{}" {} "],\n'.format(dbline, ' '.join(series)))
         f.write("];\n")
         f.write("const guitarDbFields = [\n")
         for field in DB_FIELDS:
@@ -318,5 +334,10 @@ def main(argv):
         for field in TABLE_FIELDS:
             f.write(str(DB_FIELDS.index(field)) + ', ')
         f.write("];\n")
+    print("- name_to_series_list - ")
+    for n in name_to_series_list:
+        sl = name_to_series_list[n]
+        if len(sl) > 1:
+            print("{}: {}".format(n, sl))
 if __name__ == "__main__":
     main(sys.argv[1:])

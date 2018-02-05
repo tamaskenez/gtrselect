@@ -81,6 +81,14 @@
   </div>
   <div>
     <table>
+      <tr>
+        <td><span id="span_discontinued" class="choice">Include Discontinued</span>
+        <td><span id="span_left_friendy" class="choice">Only Left-Friendy</span>
+        <td><span id="span_electronics" class="choice">Only w/Electronics</span>
+    </table>
+  </div>
+  <div>
+    <table>
       <tr id='tr_simplifiedBodySizeChoice'>
         <td><span class="choice_key">Body Size: </span>
     </table>
@@ -106,7 +114,7 @@
   <div id='div_data_display'>Table here</div>
   <script>
     const PRODUCT_GROUP_CHOICE_SET = ['6-String', '12-String', 'Backpacker', 'Ukulele']
-    const SERIES_CHOICE_SET = ['New', 'Limited', 'Special', 'Authentic', 'Signature', 'Retro', 'Standard-2018', 'Standard', 'Performing', '17', '16', '15', 'Road', 'X', 'Little', 'Junior', 'Ukulele', 'Backpacker', 'FSC', 'Discontinued']
+    const SERIES_CHOICE_SET = ['All', 'New', 'Limited', 'Special', 'Authentic', 'Signature', 'Retro', 'Standard-2018', 'Standard', 'Performing', '17', '16', '15', 'Road', 'X', 'Little', 'Junior', 'Ukulele', 'Backpacker', 'FSC']
     const SIMPLIFIED_BODY_SIZE_CHOICE_SET = ['Grand J', 'J', 'D', 'M (0000)', 'Grand Performance', '000', '00', '0', 'D Jr', 'M (0)', 'Backpacker', 'Ukulele']
     const PRICE_RANGE_CHOICE_SET = ['below $1000', '$1999', '$2999', '$3999', '$4999', 'above $5000']
     const TOP_CHOICE_SET = ['Walnut', 'Cherry', 'Koa', 'Mahogany', 'Spruce', 'Sapele', 'HPL']
@@ -120,8 +128,7 @@
       return r
     }
     function resetSelections() {
-      selected_by_attr["Series"] = arrayToSet(SERIES_CHOICE_SET)
-      delete selected_by_attr["Series"].Discontinued
+      selected_by_attr["Series"] = "All"
       selected_by_attr["Simplified Body Size"] = arrayToSet(SIMPLIFIED_BODY_SIZE_CHOICE_SET)
       selected_by_attr["Price Range"] = arrayToSet(PRICE_RANGE_CHOICE_SET)
       selected_by_attr["Top"] = arrayToSet(TOP_CHOICE_SET)
@@ -133,9 +140,14 @@
     resetSelections()
     let stat_by_attr = {}
     let vis_stat_by_attr = {}
+    let available_series = {}
 
+    const db_name_ix = 0
+    const db_url_ix = 1
+    const db_image_ix = 2
+    const db_price_ix = 3
     const db_product_group_ix = guitarDbFields.indexOf("Product Group")
-    const db_series_ix = guitarDbFields.indexOf("Series")
+    const db_series_ix = guitarDbFields.indexOf("Series List")
     const db_simplified_body_size_ix = guitarDbFields.indexOf("Simplified Body Size")
     const db_body_size_ix = guitarDbFields.indexOf("Body Size")
     const db_top_material_ix = guitarDbFields.indexOf("Top Material")
@@ -165,6 +177,17 @@
       return cNode
     }
 
+    function priceToInt(price) {
+      result = 0
+      for(const ix in price) {
+        const cc = price.charCodeAt(ix)
+        if (48 <= cc && cc < 58) {
+          result = result * 10 + (cc - 48)
+        }
+      }
+      return result
+    }
+
     function renderTable() {
       const table = document.createElement('TABLE')
       const selected_product_group = PRODUCT_GROUP_CHOICE_SET[selected_by_attr["Product Group"]]
@@ -173,12 +196,13 @@
       stat_by_attr.count = 0
       vis_stat_by_attr = {}
       vis_stat_by_attr.count = 0
+      available_series = {}
 
+      let indices_to_render = []
       for (i = 0; i < guitarDb.length; ++i) {
-        const tr = document.createElement('TR')
         const gi = guitarDb[i]
         const product_group = gi[db_product_group_ix]
-        const series = gi[db_series_ix]
+        const series_list = gi[db_series_ix]
         const simplified_body_size = gi[db_simplified_body_size_ix]
         const price_range = gi[db_price_range_ix]
         const top = gi[db_top_material_ix]
@@ -210,17 +234,32 @@
           continue
         }
 
+        const series_list_split = series_list.split(" ")
+        {
+          for (ix in series_list_split) {
+            w = series_list_split[ix]
+            if (w == '') continue
+            if (!(w in available_series))
+              available_series[w] = null
+          }
+        }
+
+        const series_sel = selected_by_attr["Series"]
+        include_this = series_sel == "All" || series_list.indexOf(series_sel) >= 0
+        if (!include_this &&
+          (selected_by_attr["Discontinued"] != undefined) &&
+          ("Discontinued" in series_list)) {
+          include_this = true
+        }
+        if (!include_this) {
+          continue
+        }
+
         ++stat_by_attr.count
-        incrementStat(stat_by_attr, "Series", series)
         incrementStat(stat_by_attr, "Simplified Body Size", simplified_body_size)
         incrementStat(stat_by_attr, "Price Range", price_range)
         incrementStat(stat_by_attr, "Top", simple_top)
         incrementStat(stat_by_attr, "BackSide", simple_backside)
-
-        const series_sel = selected_by_attr["Series"]
-        if (!(series in series_sel)) {
-          continue
-        }
 
         const simplified_body_size_sel = selected_by_attr["Simplified Body Size"]
         if (!(simplified_body_size in simplified_body_size_sel)) {
@@ -243,12 +282,32 @@
         }
 
         ++vis_stat_by_attr.count
-        incrementStat(vis_stat_by_attr, "Series", series)
         incrementStat(vis_stat_by_attr, "Simplified Body Size", simplified_body_size)
         incrementStat(vis_stat_by_attr, "Price Range", price_range)
         incrementStat(vis_stat_by_attr, "Top", simple_top)
         incrementStat(vis_stat_by_attr, "BackSide", simple_backside)
 
+        {
+          for (ix in series_list_split) {
+            w = series_list_split[ix]
+            if (w == '') continue
+            incrementStat(vis_stat_by_attr, "Series", w)
+          }
+        }
+
+        indices_to_render.push(i)
+      }
+
+      indices_to_render.sort(function(x, y) {
+        const px = guitarDb[x][db_price_ix]
+        const py = guitarDb[y][db_price_ix]
+        return priceToInt(py) - priceToInt(px)
+      })
+      
+      for (ii in indices_to_render) {
+        const i = indices_to_render[ii]
+        const tr = document.createElement('TR')
+        const gi = guitarDb[i]
         {
           const td = document.createElement('TD')
           const innertable = document.createElement('TABLE')
@@ -258,9 +317,9 @@
 
           {
             let img = document.createElement('IMG')
-            img.src = "res/imgs_table_horiz/" + gi[3]
+            img.src = "res/imgs_table_horiz/" + gi[db_image_ix]
             let a = document.createElement('A')
-            a.href = gi[2]
+            a.href = gi[db_url_ix]
             a.appendChild(img)
             const tdq = document.createElement('TD')
             tdq.appendChild(a)
@@ -270,13 +329,13 @@
 
           {
             let a = document.createElement('A')
-            a.href = gi[2]
-            a.innerText = gi[0]
+            a.href = gi[db_url_ix]
+            a.innerText = gi[db_name_ix]
             tr1.style = "text-align:center"
             tr1.appendChild(a)
           }
 
-          tr2.appendChild(document.createTextNode(gi[4]))
+          tr2.appendChild(document.createTextNode(gi[db_price_ix]))
           tr2.style = "text-align:center"
 
           innertable.appendChild(tr0)
@@ -354,12 +413,14 @@
         let choice_count = 0
         for (let i = 0; i < choice_set.length; ++i) {
           const choice_val = choice_set[i]
-          count = stat_by_attr[choice_key][choice_val]
+          if (choice_key in stat_by_attr)
+            count = stat_by_attr[choice_key][choice_val]
+          else
+            count = 0
           if (count != undefined || count > 0) {
+            let vis_count = 0
             if (choice_key in vis_stat_by_attr)
               vis_count = vis_stat_by_attr[choice_key][choice_val]
-            else
-              vis_count = 0
             const s = document.createElement('SPAN')
             s.appendChild(document.createTextNode(choice_val))
             s.className = choice_val in selected_choice_vals
@@ -371,10 +432,56 @@
             ++choice_count
           }
         }
-        node.style.visibility = choice_count <= 1 ? "hidden" : "visible"
+        node.style.visibility = choice_count < 1 ? "hidden" : "visible"
+      }
+      function addSeries() {
+        const node = resetChoiceNode('tr_seriesChoice')
+        const selected_choice_val = selected_by_attr["Series"]
+        let choice_count = 0
+        for (let i = 0; i < SERIES_CHOICE_SET.length; ++i) {
+          const choice_val = SERIES_CHOICE_SET[i]
+          if (choice_val != "All" && !(choice_val in available_series))
+            continue
+          let vis_count = 0
+          if ("Series" in vis_stat_by_attr) {
+            const xs = vis_stat_by_attr["Series"];
+            if (choice_val in xs)
+              vis_count = xs[choice_val]
+          }
+          const s = document.createElement('SPAN')
+          s.appendChild(document.createTextNode(choice_val))
+          
+          let c = null
+          if (selected_choice_val == "All" || selected_choice_val == choice_val) {
+            if (choice_val == "All" || vis_count > 0)
+              c = "activeChoice"
+            else
+              c = "activeEmptyChoice"
+          } else
+            c = "choice"
+          s.className = c
+          s.onclick = function() { seriesChoiceClicked(choice_val) }
+          const td = document.createElement('TD')
+          td.appendChild(s)
+          node.appendChild(td)
+          ++choice_count
+        }
+        // node.style.visibility = choice_count <= 1 ? "hidden" : "visible"
       }
 
-      addChoiceList('tr_seriesChoice', "Series", SERIES_CHOICE_SET)
+      addSeries()
+      {
+        s = document.getElementById("span_discontinued")
+        s.className = ("Discontinued" in selected_by_attr) ? "activeChoice" : "choice"
+      }
+      {
+        s = document.getElementById("span_left_friendy")
+        s.className = ("Left Friendy" in selected_by_attr) ? "activeChoice" : "choice"
+      }
+      {
+        s = document.getElementById("span_electronics")
+        s.className = ("Electronics" in selected_by_attr) ? "activeChoice" : "choice"
+      }
       addChoiceList('tr_simplifiedBodySizeChoice', "Simplified Body Size", SIMPLIFIED_BODY_SIZE_CHOICE_SET)
       addChoiceList('tr_priceRangeChoice', "Price Range", PRICE_RANGE_CHOICE_SET)
       addChoiceList('tr_topChoice', "Top", TOP_CHOICE_SET)
@@ -395,11 +502,28 @@
         selected_choice_vals = selected_by_attr[choice_key]
         if (x in selected_choice_vals) {
           // Unselect.
-          delete selected_choice_vals[x]
+          let vis_count = 0
+          for (c in selected_choice_vals) {
+            if (choice_key in vis_stat_by_attr && vis_stat_by_attr[choice_key][c] > 0) {
+              vis_count += 1
+            }
+          }
+          if (vis_count > 1) {
+            delete selected_choice_vals[x]
+          } else {
+            return
+          }
         } else {
           // Select
           selected_choice_vals[x] = null
         }
+        renderTable()
+        updateSelectors()
+      }
+    }
+    function seriesChoiceClicked(x) {
+      if (selected_by_attr["Series"] != x) {
+        selected_by_attr["Series"] = x
         renderTable()
         updateSelectors()
       }
