@@ -93,14 +93,14 @@
   </div>
   <div>
     <table>
-      <tr id='tr_simplifiedBodySizeChoice'>
-        <td><span class="choice_key">Body Size: </span>
+      <tr id='tr_priceRangeChoice'>
+        <td><span class="choice_key">Price Range: </span>
     </table>
   </div>
   <div>
     <table>
-      <tr id='tr_priceRangeChoice'>
-        <td><span class="choice_key">Price Range: </span>
+      <tr id='tr_simplifiedBodySizeChoice'>
+        <td><span class="choice_key">Body Size: </span>
     </table>
   </div>
   <div>
@@ -121,6 +121,7 @@
         <td><span class="choice_key">Fingerboard Material: </span>
     </table>
   </div>
+  <div id='found'></div>
   <div id='div_data_display'>Table here</div>
   <script>
     const PRODUCT_GROUP_CHOICE_SET = ['6-String', '12-String', 'Backpacker', 'Ukulele']
@@ -156,6 +157,7 @@
     let stat_by_attr = {}
     let vis_stat_by_attr = {}
     let available_series = {}
+    let table_view = true
 
     const db_name_ix = 0
     const db_url_ix = 1
@@ -207,7 +209,6 @@
     }
 
     function renderTable() {
-      const table = document.createElement('TABLE')
       const selected_product_group = PRODUCT_GROUP_CHOICE_SET[selected_by_attr["Product Group"]]
 
       stat_by_attr = {}
@@ -342,103 +343,175 @@
         return priceToInt(py) - priceToInt(px)
       })
 
+      {
+        let s = null
+        if (indices_to_render.length == 1)
+          s = "Found 1 instrument."
+        else
+          s = "Found " + indices_to_render.length + " instruments."
+        document.getElementById('found').innerHTML = s
+      }
+      const table = document.createElement('TABLE')
+      let last_row_width = 0
+      let current_tr = null
       for (ii in indices_to_render) {
         const i = indices_to_render[ii]
         const tr = document.createElement('TR')
         const gi = guitarDb[i]
         const series_list_split = gi[db_series_ix].split(" ")
-        {
-          const td = document.createElement('TD')
-          const innertable = document.createElement('TABLE')
-          const tr0 = document.createElement('TR')
-          const tr1 = document.createElement('TR')
-          const tr2 = document.createElement('TR')
-          const tr3 = document.createElement('TR')
 
+        if (table_view) {
           {
-            let img = document.createElement('IMG')
-            img.src = "res/imgs_table_horiz/" + gi[db_image_ix]
-            let a = document.createElement('A')
-            a.href = gi[db_url_ix]
-            a.appendChild(img)
-            let tdq = document.createElement('TD')
-            tdq.appendChild(a)
-            tr0.appendChild(tdq)
-            tdq.style = "text-align:center"
-          }
+            const td = document.createElement('TD')
+            const innertable = document.createElement('TABLE')
+            const tr0 = document.createElement('TR')
+            const tr1 = document.createElement('TR')
+            const tr2 = document.createElement('TR')
+            const tr3 = document.createElement('TR')
 
-          {
-            let td = document.createElement('TD')
-            let a = document.createElement('A')
-            a.href = gi[db_url_ix]
-            a.innerText = gi[db_name_ix]
-            td.style = "text-align:center"
-            td.appendChild(a)
-            tr1.appendChild(td)
-          }
+            {
+              let img = document.createElement('IMG')
+              img.src = "res/imgs_table_horiz/" + gi[db_image_ix]
+              let a = document.createElement('A')
+              a.href = gi[db_url_ix]
+              a.appendChild(img)
+              let tdq = document.createElement('TD')
+              tdq.appendChild(a)
+              tr0.appendChild(tdq)
+              tdq.style = "text-align:center"
+            }
 
-          {
-            let td = document.createElement('TD')
-            price_str = gi[db_price_ix]
-            if (series_list_split.indexOf("Discontinued") >= 0)
-              price_str = "(was " + price_str + ")"
-            td.appendChild(document.createTextNode(price_str))
-            tr3.appendChild(td)
-            td.style = "text-align:center"
+            {
+              let td = document.createElement('TD')
+              let a = document.createElement('A')
+              a.href = gi[db_url_ix]
+              a.innerText = gi[db_name_ix]
+              td.style = "text-align:center"
+              td.appendChild(a)
+              tr1.appendChild(td)
+            }
+
+            {
+              let td = document.createElement('TD')
+              price_str = gi[db_price_ix]
+              if (series_list_split.indexOf("Discontinued") >= 0)
+                price_str = "(was " + price_str + ")"
+              td.appendChild(document.createTextNode(price_str))
+              tr3.appendChild(td)
+              td.style = "text-align:center"
+            }
+            {
+              let td = document.createElement('TD')
+              td.appendChild(document.createTextNode(gi[db_body_size_ix]))
+              td.style = "text-align:center"
+              tr2.appendChild(td)
+            }
+            innertable.appendChild(tr0)
+            innertable.appendChild(tr1)
+            innertable.appendChild(tr2)
+            innertable.appendChild(tr3)
+            td.appendChild(innertable)
+            tr.appendChild(td)
+          }
+          const add_cell = function(cell_text) {
+            const td = document.createElement('TD')
+            tr.appendChild(td)
+            return td
           }
           {
-            let td = document.createElement('TD')
-            td.appendChild(document.createTextNode(gi[db_body_size_ix]))
-            td.style = "text-align:center"
-            tr2.appendChild(td)
+            const td = add_cell()
+            td.appendChild(document.createTextNode(gi[db_top_material_ix] + " top,"))
+            td.appendChild(document.createElement("BR"))
+            td.appendChild(document.createTextNode(gi[db_back_side_material_ix] + " back/side"))
+            td.appendChild(document.createElement("BR"))
+            td.appendChild(document.createTextNode(gi[db_neck_material_ix] + " neck"))
           }
-          innertable.appendChild(tr0)
-          innertable.appendChild(tr1)
-          innertable.appendChild(tr2)
-          innertable.appendChild(tr3)
-          td.appendChild(innertable)
-          tr.appendChild(td)
+          {
+            const td = add_cell()
+            td.appendChild(document.createTextNode(gi[db_fingerboard_material_ix] + " fingerboard,"))
+            td.appendChild(document.createElement("BR"))
+            td.appendChild(document.createTextNode(gi[db_neck_shape_ix] + " shape with"))
+            td.appendChild(document.createElement("BR"))
+            td.appendChild(document.createTextNode(gi[db_neck_taper_ix]))
+          }
+          {
+            const td = add_cell()
+            td.appendChild(document.createTextNode(gi[db_scale_length_ix] + " scale,"))
+            td.appendChild(document.createElement("BR"))
+            td.appendChild(document.createTextNode(gi[db_fingerboard_with_at_nut_ix] + " at nut"))
+          }
+          if (selected_by_attr["Electronics Only"]) {
+            const td = add_cell()
+            td.appendChild(document.createTextNode(gi[db_electronics]))
+          }
+          /*
+          for (j = 0; j < tableFieldToDbIndices.length; j++) {
+            const ix = tableFieldToDbIndices[j]
+            add_cell(gi[ix])
+          }
+          */
+          table.appendChild(tr)
+        } else {
+          // Gallery view.
+          if (current_tr == null) {
+            current_tr = document.createElement('TR')
+            table.appendChild(current_tr)
+          }
+          let td = document.createElement('TD')
+          td.style = "text-align:center"
+          current_tr.appendChild(td)
+          {
+            let itable = document.createElement('TABLE')
+            itable.style = style="margin: 0px auto;"
+            td.appendChild(itable)
+            let itr = document.createElement('TR')
+            itable.appendChild(itr)
+            let itd = document.createElement('TD')
+            itr.appendChild(itd)
+            
+            {
+              let img = document.createElement('IMG')
+              img.src = "res/imgs/" + gi[db_image_ix]
+              img.height = 400
+              let a = document.createElement('A')
+              a.href = gi[db_url_ix]
+              a.appendChild(img)
+              img.style = "text-align:center"
+              itd.appendChild(a)
+              itd.style = "text-align:center"
+            }
+
+            itr = document.createElement('TR')
+            itable.appendChild(itr)
+            itd = document.createElement('TD')
+            itr.appendChild(itd)
+
+            {
+              let a = document.createElement('A')
+              a.href = gi[db_url_ix]
+              a.innerText = gi[db_name_ix]
+              itd.appendChild(a)
+              itd.style = "text-align:center"
+            }
+
+            itr = document.createElement('TR')
+            itable.appendChild(itr)
+            itd = document.createElement('TD')
+            itr.appendChild(itd)
+
+            {
+              price_str = gi[db_price_ix]
+              if (series_list_split.indexOf("Discontinued") >= 0)
+                price_str = "(was " + price_str + ")"
+              itd.appendChild(document.createTextNode(price_str))
+              itd.style = "text-align:center"
+            }
+          }
+          if (current_tr.childNodes.length >= 4) {
+            current_tr = null
+          }
         }
-        const add_cell = function(cell_text) {
-          const td = document.createElement('TD')
-          tr.appendChild(td)
-          return td
-        }
-        {
-          const td = add_cell()
-          td.appendChild(document.createTextNode(gi[db_top_material_ix] + " top,"))
-          td.appendChild(document.createElement("BR"))
-          td.appendChild(document.createTextNode(gi[db_back_side_material_ix] + " back/side"))
-          td.appendChild(document.createElement("BR"))
-          td.appendChild(document.createTextNode(gi[db_neck_material_ix] + " neck"))
-        }
-        {
-          const td = add_cell()
-          td.appendChild(document.createTextNode(gi[db_fingerboard_material_ix] + " fingerboard,"))
-          td.appendChild(document.createElement("BR"))
-          td.appendChild(document.createTextNode(gi[db_neck_shape_ix] + " shape with"))
-          td.appendChild(document.createElement("BR"))
-          td.appendChild(document.createTextNode(gi[db_neck_taper_ix]))
-        }
-        {
-          const td = add_cell()
-          td.appendChild(document.createTextNode(gi[db_scale_length_ix] + " scale,"))
-          td.appendChild(document.createElement("BR"))
-          td.appendChild(document.createTextNode(gi[db_fingerboard_with_at_nut_ix] + " at nut"))
-        }
-        if (selected_by_attr["Electronics Only"]) {
-          const td = add_cell()
-          td.appendChild(document.createTextNode(gi[db_electronics]))
-        }
-        /*
-        for (j = 0; j < tableFieldToDbIndices.length; j++) {
-          const ix = tableFieldToDbIndices[j]
-          add_cell(gi[ix])
-        }
-        */
-        table.appendChild(tr)
       }
-
       let node = removeChildNodesById('div_data_display')
       node.appendChild(table)
     }
