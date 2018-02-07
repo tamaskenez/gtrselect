@@ -68,6 +68,10 @@
 
 <body>
   <div>
+    <h1><p style="text-align:center">Martin Guitar Selector</p></h1>
+    <p style="text-align:center"><i>see the original here: <a href="https://www.martinguitar.com/guitars/">martinguitar.com/guitars</a></i></p>
+  </div>
+  <div>
     <table>
       <tr id='tr_productGroupChoice'>
         <td><span class="choice_key">Product Group: </span>
@@ -111,6 +115,12 @@
         <td><span class="choice_key">Back/Side Material: </span>
     </table>
   </div>
+  <div>
+    <table>
+      <tr id='tr_fingerboardChoice'>
+        <td><span class="choice_key">Fingerboard Material: </span>
+    </table>
+  </div>
   <div id='div_data_display'>Table here</div>
   <script>
     const PRODUCT_GROUP_CHOICE_SET = ['6-String', '12-String', 'Backpacker', 'Ukulele']
@@ -118,7 +128,8 @@
     const SIMPLIFIED_BODY_SIZE_CHOICE_SET = ['Grand J', 'J', 'D', 'M (0000)', 'Grand Performance', '000', '00', '0', 'D Jr', 'M (0)', 'Backpacker', 'Ukulele']
     const PRICE_RANGE_CHOICE_SET = ['below $1,000', '$1,999', '$2,999', '$3,999', '$4,999', 'above $5,000']
     const TOP_CHOICE_SET = ['Walnut', 'Cherry', 'Koa', 'Mahogany', 'Spruce', 'Sapele', 'HPL']
-    const BACKSIDE_CHOICE_SET = ['Katalox', 'Walnut', 'Cocobolo', 'Moabi', 'Goncalo Alves', 'Cherry', 'Koa', 'Rosewood', 'Sycamore', 'Mahogany', 'Mutenye', 'Siris', 'Sapele', 'Tonewoods', 'HPL']
+    const BACKSIDE_CHOICE_SET = ['Katalox', 'Walnut', 'Cocobolo', 'Moabi', 'Goncalo Alves', 'Cherry', 'Koa', 'Sycamore', 'Rosewood', 'Mutenye', 'Mahogany', 'Siris', 'Sapele', 'Tonewoods', 'HPL']
+    const FINGERBOARD_CHOICE_SET = ['Walnut', 'Blackwood', 'Ebony', 'Katalox', 'Rosewood', 'Richlite', 'Morado', 'Sipo']
 
     function arrayToSet(a) {
       let r = {}
@@ -136,6 +147,7 @@
       selected_by_attr["Discontinued"] = false
       selected_by_attr["Left Friendly Only"] = false
       selected_by_attr["Electronics Only"] = false
+      selected_by_attr["Fingerboard"] = arrayToSet(FINGERBOARD_CHOICE_SET)
     }
 
     let selected_by_attr = {}
@@ -213,6 +225,7 @@
         const price_range = gi[db_price_range_ix]
         const top = gi[db_top_material_ix]
         const backside = gi[db_back_side_material_ix]
+        const fingerboard = gi[db_fingerboard_material_ix]
 
         let simple_top = null
         for (let i = 0; i < TOP_CHOICE_SET.length; ++i) {
@@ -235,6 +248,17 @@
           }
         }
         console.assert(simple_backside != null, "back/side not found: " + backside)
+
+        let simple_fingerboard = null
+        for (let i = 0; i < FINGERBOARD_CHOICE_SET.length; ++i) {
+          const t = FINGERBOARD_CHOICE_SET[i]
+          const f = fingerboard.indexOf(t)
+          if (f >= 0) {
+            simple_fingerboard = t
+            break
+          }
+        }        
+        console.assert(simple_fingerboard != null, "fingerboard not found: " + fingerboard)
 
         if (product_group != selected_product_group) {
           continue
@@ -267,6 +291,7 @@
         incrementStat(stat_by_attr, "Price Range", price_range)
         incrementStat(stat_by_attr, "Top", simple_top)
         incrementStat(stat_by_attr, "BackSide", simple_backside)
+        incrementStat(stat_by_attr, "Fingerboard", simple_fingerboard)
 
         const simplified_body_size_sel = selected_by_attr["Simplified Body Size"]
         if (!(simplified_body_size in simplified_body_size_sel)) {
@@ -288,11 +313,17 @@
           continue
         }
 
+        const fingerboard_sel = selected_by_attr["Fingerboard"]
+        if (!(simple_fingerboard in fingerboard_sel)) {
+          continue
+        }
+
         ++vis_stat_by_attr.count
         incrementStat(vis_stat_by_attr, "Simplified Body Size", simplified_body_size)
         incrementStat(vis_stat_by_attr, "Price Range", price_range)
         incrementStat(vis_stat_by_attr, "Top", simple_top)
         incrementStat(vis_stat_by_attr, "BackSide", simple_backside)
+        incrementStat(vis_stat_by_attr, "Fingerboard", simple_fingerboard)
 
         {
           for (ix in series_list_split) {
@@ -501,6 +532,7 @@
       addChoiceList('tr_priceRangeChoice', "Price Range", PRICE_RANGE_CHOICE_SET)
       addChoiceList('tr_topChoice', "Top", TOP_CHOICE_SET)
       addChoiceList('tr_backSideChoice', "BackSide", BACKSIDE_CHOICE_SET)
+      addChoiceList('tr_fingerboardChoice', "Fingerboard", FINGERBOARD_CHOICE_SET)
 
       function updateBoolean(id, name) {
         const n = document.getElementById(id)

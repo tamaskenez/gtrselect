@@ -317,7 +317,7 @@ def main(argv):
     else:
         assert False, "2 or more args"
     for k in fieldstat:
-        print("{}: {}".format(k, fieldstat[k]))
+        print("# {}: {}\n".format(k, fieldstat[k]))
     with open(os.path.join(RESFOLDER, "guitardb.js"), 'w') as f:
         f.write("const guitarDb = [\n")
         for name in name_to_dbline:
