@@ -118,6 +118,9 @@ name_to_url = {}
 name_to_series_list = {}
 name_to_dbline = {}
 
+def deescape(s):
+    return s.replace("&amp;", "&").replace("&#39;", "'")
+
 def read_series(subdirname):
     series = re.match(".*/(.*)", subdirname).group(1)
     series = SERIES_RENAME[series]
@@ -145,7 +148,7 @@ def read_series(subdirname):
     for match in matches:
         martinurl = match.group(2)
         imgfilename = re.match(".*/(.*)", match.group(3)).group(1)
-        name = match.group(4)
+        name = deescape(match.group(4))
         nname = normalizeToFilename(name)
         print("- " + name)
         price = match.group(5)
@@ -206,6 +209,7 @@ def read_series(subdirname):
                     value = 'None'
                 electronics_value = value
             elif field == "Recommended Strings":
+                value = deescape(value)
                 twelve_strings = "12-String" in value
             elif field == "Body Size":
                 if value.startswith("0-"):
@@ -242,11 +246,11 @@ def read_series(subdirname):
         field = "Price Range"
         price_value = int(''.join([c for c in price if c.isdigit()]))
         if price_value < 1000:
-            price_range = "below $1000"
+            price_range = "below $1,000"
         elif price_value >= 5000:
-            price_range = "above $5000"
+            price_range = "above $5,000"
         else:
-            price_range = "$" + str((price_value // 1000) * 1000 + 999)
+            price_range = "$" + str(price_value // 1000) + ",999"
 
         dbline = dbline + '"' + price_range + '", '
         if field in fieldstat:

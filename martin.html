@@ -83,8 +83,8 @@
     <table>
       <tr>
         <td><span id="span_discontinued" class="choice">Include Discontinued</span>
-        <td><span id="span_left_friendy" class="choice">Only Left-Friendy</span>
-        <td><span id="span_electronics" class="choice">Only w/Electronics</span>
+        <td><span id="span_left_friendy_only" class="choice">Only Left-Friendly</span>
+        <td><span id="span_electronics_only" class="choice">Only w/Electronics</span>
     </table>
   </div>
   <div>
@@ -116,7 +116,7 @@
     const PRODUCT_GROUP_CHOICE_SET = ['6-String', '12-String', 'Backpacker', 'Ukulele']
     const SERIES_CHOICE_SET = ['All', 'New', 'Limited', 'Special', 'Authentic', 'Signature', 'Retro', 'Standard-2018', 'Standard', 'Performing', '17', '16', '15', 'Road', 'X', 'Little', 'Junior', 'Ukulele', 'Backpacker', 'FSC']
     const SIMPLIFIED_BODY_SIZE_CHOICE_SET = ['Grand J', 'J', 'D', 'M (0000)', 'Grand Performance', '000', '00', '0', 'D Jr', 'M (0)', 'Backpacker', 'Ukulele']
-    const PRICE_RANGE_CHOICE_SET = ['below $1000', '$1999', '$2999', '$3999', '$4999', 'above $5000']
+    const PRICE_RANGE_CHOICE_SET = ['below $1,000', '$1,999', '$2,999', '$3,999', '$4,999', 'above $5,000']
     const TOP_CHOICE_SET = ['Walnut', 'Cherry', 'Koa', 'Mahogany', 'Spruce', 'Sapele', 'HPL']
     const BACKSIDE_CHOICE_SET = ['Katalox', 'Walnut', 'Cocobolo', 'Moabi', 'Goncalo Alves', 'Cherry', 'Koa', 'Rosewood', 'Sycamore', 'Mahogany', 'Mutenye', 'Siris', 'Sapele', 'Tonewoods', 'HPL']
 
@@ -133,6 +133,9 @@
       selected_by_attr["Price Range"] = arrayToSet(PRICE_RANGE_CHOICE_SET)
       selected_by_attr["Top"] = arrayToSet(TOP_CHOICE_SET)
       selected_by_attr["BackSide"] = arrayToSet(BACKSIDE_CHOICE_SET)
+      selected_by_attr["Discontinued"] = false
+      selected_by_attr["Left Friendly Only"] = false
+      selected_by_attr["Electronics Only"] = false
     }
 
     let selected_by_attr = {}
@@ -159,6 +162,8 @@
     const db_scale_length_ix = guitarDbFields.indexOf("Scale Length")
     const db_fingerboard_with_at_nut_ix = guitarDbFields.indexOf("Fingerboard Width at Nut")
     const db_price_range_ix = guitarDbFields.indexOf("Price Range")
+    const db_left_ix = guitarDbFields.indexOf("Left Handed Availability")
+    const db_electronics = guitarDbFields.indexOf("Electronics Availability")
 
     function incrementStat(sba, choice_key, choice_val) {
       if (!(choice_key in sba)) {
@@ -202,7 +207,7 @@
       for (i = 0; i < guitarDb.length; ++i) {
         const gi = guitarDb[i]
         const product_group = gi[db_product_group_ix]
-        const series_list = gi[db_series_ix]
+        const series_list_split = gi[db_series_ix].split(" ")
         const simplified_body_size = gi[db_simplified_body_size_ix]
         const price_range = gi[db_price_range_ix]
         const top = gi[db_top_material_ix]
@@ -234,7 +239,6 @@
           continue
         }
 
-        const series_list_split = series_list.split(" ")
         {
           for (ix in series_list_split) {
             w = series_list_split[ix]
@@ -245,15 +249,17 @@
         }
 
         const series_sel = selected_by_attr["Series"]
-        include_this = series_sel == "All" || series_list.indexOf(series_sel) >= 0
-        if (!include_this &&
-          (selected_by_attr["Discontinued"] != undefined) &&
-          ("Discontinued" in series_list)) {
-          include_this = true
+        include_this = series_sel == "All" || series_list_split.indexOf(series_sel) >= 0
+        if (!selected_by_attr["Discontinued"] && series_list_split.indexOf("Discontinued") >= 0) {
+          continue
         }
         if (!include_this) {
           continue
         }
+        if (selected_by_attr["Left Friendly Only"] && gi[db_left_ix] != "Yes")
+          continue
+        if (selected_by_attr["Electronics Only"] && gi[db_electronics] == "None")
+          continue
 
         ++stat_by_attr.count
         incrementStat(stat_by_attr, "Simplified Body Size", simplified_body_size)
@@ -303,11 +309,12 @@
         const py = guitarDb[y][db_price_ix]
         return priceToInt(py) - priceToInt(px)
       })
-      
+
       for (ii in indices_to_render) {
         const i = indices_to_render[ii]
         const tr = document.createElement('TR')
         const gi = guitarDb[i]
+        const series_list_split = gi[db_series_ix].split(" ")
         {
           const td = document.createElement('TD')
           const innertable = document.createElement('TABLE')
@@ -335,7 +342,10 @@
             tr1.appendChild(a)
           }
 
-          tr2.appendChild(document.createTextNode(gi[db_price_ix]))
+          price_str = gi[db_price_ix]
+          if (series_list_split.indexOf("Discontinued") >= 0)
+            price_str = "(was " + price_str + ")"
+          tr2.appendChild(document.createTextNode(price_str))
           tr2.style = "text-align:center"
 
           innertable.appendChild(tr0)
@@ -470,22 +480,20 @@
       }
 
       addSeries()
-      {
-        s = document.getElementById("span_discontinued")
-        s.className = ("Discontinued" in selected_by_attr) ? "activeChoice" : "choice"
-      }
-      {
-        s = document.getElementById("span_left_friendy")
-        s.className = ("Left Friendy" in selected_by_attr) ? "activeChoice" : "choice"
-      }
-      {
-        s = document.getElementById("span_electronics")
-        s.className = ("Electronics" in selected_by_attr) ? "activeChoice" : "choice"
-      }
       addChoiceList('tr_simplifiedBodySizeChoice', "Simplified Body Size", SIMPLIFIED_BODY_SIZE_CHOICE_SET)
       addChoiceList('tr_priceRangeChoice', "Price Range", PRICE_RANGE_CHOICE_SET)
       addChoiceList('tr_topChoice', "Top", TOP_CHOICE_SET)
       addChoiceList('tr_backSideChoice', "BackSide", BACKSIDE_CHOICE_SET)
+
+      function updateBoolean(id, name) {
+        const n = document.getElementById(id)
+        n.className = selected_by_attr[name] ? "activeChoice" : "choice"
+        n.onclick = function() { booleanChoiceClicked(name) }
+      }
+
+      updateBoolean('span_discontinued', "Discontinued")
+      updateBoolean('span_electronics_only', "Electronics Only")
+      updateBoolean('span_left_friendy_only', "Left Friendly Only")
     }
 
     // x is either an index (for "Product Group") or
@@ -527,6 +535,11 @@
         renderTable()
         updateSelectors()
       }
+    }
+    function booleanChoiceClicked(name) {
+      selected_by_attr[name] = !selected_by_attr[name]
+      renderTable()
+      updateSelectors()
     }
   </script>
   <script>
