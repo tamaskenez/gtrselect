@@ -163,7 +163,8 @@
     const db_fingerboard_with_at_nut_ix = guitarDbFields.indexOf("Fingerboard Width at Nut")
     const db_price_range_ix = guitarDbFields.indexOf("Price Range")
     const db_left_ix = guitarDbFields.indexOf("Left Handed Availability")
-    const db_electronics = guitarDbFields.indexOf("Electronics Availability")
+    const db_electronics_availability = guitarDbFields.indexOf("Electronics Availability")
+    const db_electronics = guitarDbFields.indexOf("Electronics")
 
     function incrementStat(sba, choice_key, choice_val) {
       if (!(choice_key in sba)) {
@@ -258,7 +259,7 @@
         }
         if (selected_by_attr["Left Friendly Only"] && gi[db_left_ix] != "Yes")
           continue
-        if (selected_by_attr["Electronics Only"] && gi[db_electronics] == "None")
+        if (selected_by_attr["Electronics Only"] && gi[db_electronics_availability] == "None")
           continue
 
         ++stat_by_attr.count
@@ -321,6 +322,7 @@
           const tr0 = document.createElement('TR')
           const tr1 = document.createElement('TR')
           const tr2 = document.createElement('TR')
+          const tr3 = document.createElement('TR')
 
           {
             let img = document.createElement('IMG')
@@ -328,29 +330,41 @@
             let a = document.createElement('A')
             a.href = gi[db_url_ix]
             a.appendChild(img)
-            const tdq = document.createElement('TD')
+            let tdq = document.createElement('TD')
             tdq.appendChild(a)
             tr0.appendChild(tdq)
-            tr0.style = "text-align:center"
+            tdq.style = "text-align:center"
           }
 
           {
+            let td = document.createElement('TD')
             let a = document.createElement('A')
             a.href = gi[db_url_ix]
             a.innerText = gi[db_name_ix]
-            tr1.style = "text-align:center"
-            tr1.appendChild(a)
+            td.style = "text-align:center"
+            td.appendChild(a)
+            tr1.appendChild(td)
           }
 
-          price_str = gi[db_price_ix]
-          if (series_list_split.indexOf("Discontinued") >= 0)
-            price_str = "(was " + price_str + ")"
-          tr2.appendChild(document.createTextNode(price_str))
-          tr2.style = "text-align:center"
-
+          {
+            let td = document.createElement('TD')
+            price_str = gi[db_price_ix]
+            if (series_list_split.indexOf("Discontinued") >= 0)
+              price_str = "(was " + price_str + ")"
+            td.appendChild(document.createTextNode(price_str))
+            tr3.appendChild(td)
+            td.style = "text-align:center"
+          }
+          {
+            let td = document.createElement('TD')
+            td.appendChild(document.createTextNode(gi[db_body_size_ix]))
+            td.style = "text-align:center"
+            tr2.appendChild(td)
+          }
           innertable.appendChild(tr0)
           innertable.appendChild(tr1)
           innertable.appendChild(tr2)
+          innertable.appendChild(tr3)
           td.appendChild(innertable)
           tr.appendChild(td)
         }
@@ -359,7 +373,6 @@
           tr.appendChild(td)
           return td
         }
-        add_cell().appendChild(document.createTextNode(gi[db_body_size_ix]))
         {
           const td = add_cell()
           td.appendChild(document.createTextNode(gi[db_top_material_ix] + " top,"))
@@ -381,6 +394,10 @@
           td.appendChild(document.createTextNode(gi[db_scale_length_ix] + " scale,"))
           td.appendChild(document.createElement("BR"))
           td.appendChild(document.createTextNode(gi[db_fingerboard_with_at_nut_ix] + " at nut"))
+        }
+        if (selected_by_attr["Electronics Only"]) {
+          const td = add_cell()
+          td.appendChild(document.createTextNode(gi[db_electronics]))
         }
         /*
         for (j = 0; j < tableFieldToDbIndices.length; j++) {
