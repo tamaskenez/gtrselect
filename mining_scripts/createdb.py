@@ -295,6 +295,9 @@ def read_series(subdirname):
             fieldstat[field].add(simplified_body_size)
 
         if name in name_to_dbline:
+            if name_to_dbline[name] != dbline:
+                print("This guitar: {} changed series: {}"
+                    .format(name, name_to_series_list[name]))
             assert name_to_dbline[name] == dbline
         else:
             name_to_dbline[name] = dbline

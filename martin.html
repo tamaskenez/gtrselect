@@ -8,9 +8,15 @@
   <meta name="description" content="The Martin Guitar Selector">
   <meta name="author" content="Tamas Kenez">
 
+  <link href='https://fonts.googleapis.com/css?family=Alegreya Sans' rel='stylesheet'>
+  <link href='https://fonts.googleapis.com/css?family=Alegreya SC' rel='stylesheet'>
   <link rel="stylesheet" href="css/styles.css">
   <script src="res/guitardb.js"></script>
   <style>
+    body {
+      font-family: 'Alegreya Sans';
+      font-size: 22px;
+    }
     .rotate90 {
       -webkit-transform: rotate(90deg);
       -moz-transform: rotate(90deg);
@@ -21,17 +27,20 @@
     .choice_key {
       cursor: default;
       display: block;
-      height: 20px;
+      height: 22px;
       white-space: nowrap;
       -webkit-border-radius: 3px;
       border-radius: 3px;
+      text-align: right;
     }
     .choice {
+      font-family: 'Alegreya SC';
+      font-size: 20px;
       background-color: #f5f5f5;
       border: 1px solid #d9d9d9;
       cursor: default;
       display: block;
-      height: 20px;
+      height: 22px;
       white-space: nowrap;
       -webkit-border-radius: 3px;
       border-radius: 3px;
@@ -41,16 +50,20 @@
       border: 1px solid #898989;
     }
     .activeChoice {
+      font-family: 'Alegreya SC';
+      font-size: 20px;
       background-color: #ffc000;
       border: 1px solid #d9d989;
       cursor: default;
       display: block;
-      height: 20px;
+      height: 22px;
       white-space: nowrap;
       -webkit-border-radius: 3px;
       border-radius: 3px;
     }
     .activeEmptyChoice {
+      font-family: 'Alegreya SC';
+      font-size: 20px;
       background-color: Yellow;
       border: 1px solid #d9d989;
       cursor: default;
@@ -68,60 +81,69 @@
 
 <body>
   <div>
-    <h1><p style="text-align:center">Martin Guitar Selector</p></h1>
-    <p style="text-align:center"><i>see the original here: <a href="https://www.martinguitar.com/guitars/">martinguitar.com/guitars</a></i></p>
+    <div style="text-align:center;font-size:36px">Martin Guitar Selector</div>
+    <div style="text-align:center;font-size:12px"><i>see the original here: <a href="https://www.martinguitar.com/guitars/">martinguitar.com/guitars</a></i></div>
   </div>
-  <div>
-    <table>
-      <tr id='tr_productGroupChoice'>
-        <td><span class="choice_key">Product Group: </span>
-    </table>
-  </div>
-  <div>
-    <table>
-      <tr id='tr_seriesChoice'>
-        <td><span class="choice_key">Series: </span>
-    </table>
-  </div>
-  <div>
-    <table>
-      <tr>
-        <td><span id="span_discontinued" class="choice">Include Discontinued</span>
-        <td><span id="span_left_friendy_only" class="choice">Only Left-Friendly</span>
-        <td><span id="span_electronics_only" class="choice">Only w/Electronics</span>
-    </table>
-  </div>
-  <div>
-    <table>
-      <tr id='tr_priceRangeChoice'>
-        <td><span class="choice_key">Price Range: </span>
-    </table>
-  </div>
-  <div>
-    <table>
-      <tr id='tr_simplifiedBodySizeChoice'>
-        <td><span class="choice_key">Body Size: </span>
-    </table>
-  </div>
-  <div>
-    <table>
-      <tr id='tr_topChoice'>
-        <td><span class="choice_key">Top Material: </span>
-    </table>
-  </div>
-  <div>
-    <table>
-      <tr id='tr_backSideChoice'>
-        <td><span class="choice_key">Back/Side Material: </span>
-    </table>
-  </div>
-  <div>
-    <table>
-      <tr id='tr_fingerboardChoice'>
-        <td><span class="choice_key">Fingerboard Material: </span>
-    </table>
-  </div>
-  <div id='found'></div>
+  <br>
+  <table>
+    <tr>
+      <td><span class="choice_key">Product Group: </span>
+      <td>
+        <table>
+          <tr id='tr_productGroupChoice'>
+        </table>
+    <tr>
+      <td><span class="choice_key">Series: </span>
+      <td>
+        <table>
+          <tr id='tr_seriesChoice'>
+        </table>
+  </table>
+  <hr>
+  <table>
+    <tr>
+      <td><span class="choice_key">Price Range: </span>
+      <td>
+        <table>
+          <tr id='tr_priceRangeChoice'>
+        </table>
+    <tr>
+      <td><span class="choice_key">Body Size: </span>
+      <td>
+        <table>
+          <tr id='tr_simplifiedBodySizeChoice'>
+        </table>
+    <tr>
+      <td><span class="choice_key">Top Material: </span>
+      <td>
+        <table>
+          <tr id='tr_topChoice'>
+        </table>
+    <tr>
+      <td><span class="choice_key">Back/Side Material: </span>
+      <td>
+        <table>
+          <tr id='tr_backSideChoice'>
+        </table>
+    <tr>
+      <td><span class="choice_key">Fingerboard Material: </span>
+      <td>
+        <table>
+          <tr id='tr_fingerboardChoice'>
+        </table>
+  </table>
+  <hr>
+  <table style="margin:0 auto">
+    <tr>
+      <td><span id="span_discontinued" class="choice">Include Discontinued</span>
+      <td><span id="span_left_friendy_only" class="choice">Only Left-Friendly</span>
+      <td><span id="span_electronics_only" class="choice">Only w/Electronics</span>
+  </table>
+  <table>
+    <tr>
+      <td style="text-align:right"><span id='found'></span>
+  </table>
+
   <div id='div_data_display'>Table here</div>
   <script>
     const PRODUCT_GROUP_CHOICE_SET = ['6-String', '12-String', 'Backpacker', 'Ukulele']
@@ -386,6 +408,7 @@
               let a = document.createElement('A')
               a.href = gi[db_url_ix]
               a.innerText = gi[db_name_ix]
+              a.style = "color:#9c8246;font-family:Alegreya SC;text-decoration:none;font-size:28px"
               td.style = "text-align:center"
               td.appendChild(a)
               tr1.appendChild(td)
@@ -398,12 +421,12 @@
                 price_str = "(was " + price_str + ")"
               td.appendChild(document.createTextNode(price_str))
               tr3.appendChild(td)
-              td.style = "text-align:center"
+              td.style = "text-align:center;font-size:18px"
             }
             {
               let td = document.createElement('TD')
               td.appendChild(document.createTextNode(gi[db_body_size_ix]))
-              td.style = "text-align:center"
+              td.style = "text-align:center;font-size:18px"
               tr2.appendChild(td)
             }
             innertable.appendChild(tr0)
@@ -412,10 +435,12 @@
             innertable.appendChild(tr3)
             td.appendChild(innertable)
             tr.appendChild(td)
+            td.style = "border-bottom: 1px solid #ddd"
           }
           const add_cell = function(cell_text) {
             const td = document.createElement('TD')
             tr.appendChild(td)
+            td.style = "border-bottom: 1px solid #ddd"
             return td
           }
           {
@@ -443,6 +468,7 @@
           if (selected_by_attr["Electronics Only"]) {
             const td = add_cell()
             td.appendChild(document.createTextNode(gi[db_electronics]))
+            td.style = "border-bottom: 1px solid #ddd;text-align:center"
           }
           /*
           for (j = 0; j < tableFieldToDbIndices.length; j++) {
@@ -523,10 +549,17 @@
       }
       return node
     }
+    function resetChoiceNode2(nodeName) {
+      const node = document.getElementById(nodeName)
+      while (node.childNodes.length > 1) {
+        node.removeChild(node.lastChild)
+      }
+      return node
+    }
 
     function updateSelectors() {
       {
-        const node = resetChoiceNode('tr_productGroupChoice')
+        const node = resetChoiceNode2('tr_productGroupChoice')
         const c = selected_by_attr["Product Group"]
         for (let i = 0; i < PRODUCT_GROUP_CHOICE_SET.length; ++i) {
           const s = document.createElement('SPAN')
@@ -539,7 +572,7 @@
         }
       }
       function addChoiceList(id, choice_key, choice_set) {
-        const node = resetChoiceNode(id)
+        const node = resetChoiceNode2(id)
         const selected_choice_vals = selected_by_attr[choice_key]
         let choice_count = 0
         for (let i = 0; i < choice_set.length; ++i) {
@@ -566,7 +599,7 @@
         node.style.visibility = choice_count < 1 ? "hidden" : "visible"
       }
       function addSeries() {
-        const node = resetChoiceNode('tr_seriesChoice')
+        const node = resetChoiceNode2('tr_seriesChoice')
         const selected_choice_val = selected_by_attr["Series"]
         let choice_count = 0
         for (let i = 0; i < SERIES_CHOICE_SET.length; ++i) {
