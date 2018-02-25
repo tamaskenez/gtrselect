@@ -33,45 +33,39 @@
       border-radius: 3px;
       text-align: right;
     }
-    .choice {
+    .choice,
+    .activeChoice,
+    .activeEmptyChoice {
       font-family: 'Alegreya SC';
       font-size: 20px;
-      background-color: #f5f5f5;
-      border: 1px solid #d9d9d9;
       cursor: default;
+      border: 1px solid #d9d9d9;
       display: block;
       height: 22px;
       white-space: nowrap;
       -webkit-border-radius: 3px;
       border-radius: 3px;
+      display: block;
+      height: 22px;
+      white-space: nowrap;
+      -webkit-border-radius: 3px;
+      border-radius: 3px;
+      padding-bottom: 3px;
+    }
+
+    .choice {
+      background-color: #f5f5f5;
       color: #808080;
     }
     .choice:hover {
       border: 1px solid #898989;
     }
     .activeChoice {
-      font-family: 'Alegreya SC';
-      font-size: 20px;
+      color: black;
       background-color: #ffc000;
-      border: 1px solid #d9d989;
-      cursor: default;
-      display: block;
-      height: 22px;
-      white-space: nowrap;
-      -webkit-border-radius: 3px;
-      border-radius: 3px;
     }
     .activeEmptyChoice {
-      font-family: 'Alegreya SC';
-      font-size: 20px;
-      background-color: Yellow;
-      border: 1px solid #d9d989;
-      cursor: default;
-      display: block;
-      height: 20px;
-      white-space: nowrap;
-      -webkit-border-radius: 3px;
-      border-radius: 3px;
+      background-color: #cccccc;
     }
     .activeChoice:hover {
       border: 1px solid #898989;
@@ -162,6 +156,7 @@
       return r
     }
     function resetSelections() {
+      console.log("RESET!")
       selected_by_attr["Series"] = "All"
       selected_by_attr["Simplified Body Size"] = arrayToSet(SIMPLIFIED_BODY_SIZE_CHOICE_SET)
       selected_by_attr["Price Range"] = arrayToSet(PRICE_RANGE_CHOICE_SET)
@@ -565,7 +560,7 @@
           const s = document.createElement('SPAN')
           s.appendChild(document.createTextNode(PRODUCT_GROUP_CHOICE_SET[i]))
           s.className = i == c ? "activeChoice" : "choice"
-          s.onclick = function() { choiceClicked("Product Group", i) }
+          s.onclick = function() { choiceClicked("Product Group", i, s) }
           const td = document.createElement('TD')
           td.appendChild(s)
           node.appendChild(td)
@@ -581,7 +576,7 @@
             count = stat_by_attr[choice_key][choice_val]
           else
             count = 0
-          if (count != undefined || count > 0) {
+          if (count != undefined && count > 0) {
             let vis_count = 0
             if (choice_key in vis_stat_by_attr)
               vis_count = vis_stat_by_attr[choice_key][choice_val]
@@ -589,7 +584,7 @@
             s.appendChild(document.createTextNode(choice_val))
             s.className = choice_val in selected_choice_vals
               ? ((vis_count == undefined || vis_count == 0) ? "activeEmptyChoice" : "activeChoice") : "choice"
-            s.onclick = function() { choiceClicked(choice_key, choice_val) }
+            s.onclick = function() { choiceClicked(choice_key, choice_val, s) }
             const td = document.createElement('TD')
             td.appendChild(s)
             node.appendChild(td)
@@ -653,7 +648,7 @@
 
     // x is either an index (for "Product Group") or
     // a choice value
-    function choiceClicked(choice_key, x) {
+    function choiceClicked(choice_key, x, s) {
       if (choice_key == "Product Group") {
         if (selected_by_attr[choice_key] != x) {
           selected_by_attr[choice_key] = x
@@ -671,7 +666,7 @@
               vis_count += 1
             }
           }
-          if (vis_count > 1) {
+          if (vis_count > 1 || s.className == "activeEmptyChoice") {
             delete selected_choice_vals[x]
           } else {
             return
